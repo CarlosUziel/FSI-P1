@@ -43,6 +43,7 @@ def process_straight(size, state, pos, delta_x, delta_y):
             heuristic_0 += heuristic_1
             pos, heuristic_1 = k_in_row(board, pos, if_(state.to_move == 'X', 'O', 'X'), (delta_x, delta_y))
             heuristic_0 += heuristic_1
+            
         # TO-DO: NEEDS FIX (horizontal vs vertical)
         pos[0] += delta_y
         pos[1] = 1
