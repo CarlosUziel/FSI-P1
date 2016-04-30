@@ -21,12 +21,12 @@ def main_heuristics(state, h=7, v=6):
     """
     pos = [1, 1]
 
-    heuristic_0 = process_straight(h, state, pos, 0, 1) + \
-                  process_straight(v, state, pos, 1, 0) + \
+    heuristic_0 = process_straight(h, v, state, pos, 0, 1) + \
+                  process_straight(v, h, state, pos, 1, 0) + \
                   process_oblique(h, h, v, state, pos, -1, 1) + \
                   process_oblique(1, h, v, state, pos, 1, 1)
 
-    #if heuristic_0 > 500 or heuristic_0 < -500:
+    # if heuristic_0 > 500 or heuristic_0 < -500:
     #    print '\n'
     #    print heuristic_0
     #    print '\n'
@@ -34,19 +34,20 @@ def main_heuristics(state, h=7, v=6):
     return heuristic_0
 
 
-def process_straight(size, state, pos, delta_x, delta_y):
+def process_straight(s0, s1, state, pos, delta_x, delta_y):
     board = state.board.copy()
     heuristic_0 = 0
-    for i in range(size):
-        while tuple(pos) in board:
+    for i in range(s0):
+        while pos[delta_y] <= s1:
+            if tuple(pos) not in board:
+                pos[delta_y] += 1
             pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
             heuristic_0 += heuristic_1
             pos, heuristic_1 = k_in_row(board, pos, if_(state.to_move == 'X', 'O', 'X'), (delta_x, delta_y))
             heuristic_0 += heuristic_1
-            
-        # TO-DO: NEEDS FIX (horizontal vs vertical)
-        pos[0] += delta_y
-        pos[1] = 1
+
+        pos[delta_x] += 1
+        pos[delta_y] = 1
 
     return heuristic_0
 
@@ -89,7 +90,7 @@ def k_in_row(board, pos, player, (delta_x, delta_y)):
 
 
 def row_value(row):
-    if row == 4:
+    if row >= 4:
         return 1000
     elif row == 3:
         return 10
