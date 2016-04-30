@@ -1,6 +1,7 @@
 from random import randint
 from games import *
 
+
 def aleatoria(state):
     return randint(-100, 100)
 
@@ -20,12 +21,16 @@ def main_heuristics(state, h=7, v=6):
     """
     pos = [1, 1]
 
-    heuristic_0 = process_straight(h, state, pos, 0, 1) + process_straight(v, state, pos, 1, 0)
+    heuristic_0 = process_straight(h, state, pos, 0, 1) + \
+                  process_straight(v, state, pos, 1, 0) + \
+                  process_oblique(h, h, v, state, pos, -1, 1) + \
+                  process_oblique(1, h, v, state, pos, 1, 1)
 
-    # + \
-    # process_oblique(h, h, v, state, pos, -1, 1) + \
-    # process_oblique(1, h, v, state, pos, 1, 1)
-
+    #if heuristic_0 > 500 or heuristic_0 < -500:
+    #    print '\n'
+    #    print heuristic_0
+    #    print '\n'
+    #    display(state, v, h)
     return heuristic_0
 
 
@@ -36,8 +41,9 @@ def process_straight(size, state, pos, delta_x, delta_y):
         while tuple(pos) in board:
             pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
             heuristic_0 += heuristic_1
-            pos[0] += delta_x
-            pos[1] += delta_y
+            pos, heuristic_1 = k_in_row(board, pos, if_(state.to_move == 'X', 'O', 'X'), (delta_x, delta_y))
+            heuristic_0 += heuristic_1
+        # TO-DO: NEEDS FIX (horizontal vs vertical)
         pos[0] += delta_y
         pos[1] = 1
 
@@ -51,8 +57,8 @@ def process_oblique(origin, h, v, state, pos, delta_x, delta_y):
         while tuple(pos) in board:
             pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
             heuristic_0 += heuristic_1
-            pos[0] += delta_x
-            pos[1] += delta_y
+            pos, heuristic_1 = k_in_row(board, pos, if_(state.to_move == 'X', 'O', 'X'), (delta_x, delta_y))
+            heuristic_0 += heuristic_1
         pos[0] += delta_y
         pos[1] = 1
 
@@ -60,6 +66,8 @@ def process_oblique(origin, h, v, state, pos, delta_x, delta_y):
     for i in range(v - 1):
         while tuple(pos) in board:
             pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
+            heuristic_0 += heuristic_1
+            pos, heuristic_1 = k_in_row(board, pos, if_(state.to_move == 'X', 'O', 'X'), (delta_x, delta_y))
             heuristic_0 += heuristic_1
             pos[0] += delta_x
             pos[1] += delta_y
@@ -88,3 +96,14 @@ def row_value(row):
         return 1
     else:
         return 0
+
+
+def display(state, v, h):
+    board = state.board
+    for y in range(v, 0, -1):
+        for x in range(1, h + 1):
+            print board.get((x, y), '.'),
+        print
+    print "-------------------"
+    for n in range(1, h + 1):
+        print n,
