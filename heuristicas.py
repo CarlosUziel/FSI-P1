@@ -1,6 +1,5 @@
 from random import randint
-from utils import *
-
+from games import *
 
 def aleatoria(state):
     return randint(-100, 100)
@@ -19,72 +18,73 @@ def main_heuristics(state, h=7, v=6):
     :param state:
     :return:
     """
-
-    board = state.board.copy()
-    heuristic_0 = 0
     pos = [1, 1]
 
-    heuristic_0 += process_straight(h, board, pos, 0, 1)
-    heuristic_0 += process_straight(v, board, pos, 1, 0)
+    heuristic_0 = process_straight(h, state, pos, 0, 1) + process_straight(v, state, pos, 1, 0)
 
-    heuristic_0 += process_oblique(h, h, v, board, pos, -1, 1)
-    heuristic_0 += process_oblique(1, h, v, board, pos, 1, 1)
+    # + \
+    # process_oblique(h, h, v, state, pos, -1, 1) + \
+    # process_oblique(1, h, v, state, pos, 1, 1)
 
     return heuristic_0
 
 
-def process_straight(size, board, pos, delta_x, delta_y):
+def process_straight(size, state, pos, delta_x, delta_y):
+    board = state.board.copy()
     heuristic_0 = 0
     for i in range(size):
-        pos[0] += delta_y
-        pos[1] = 1
-        while pos in board:
-            pos, heuristic_1 = k_in_row(board, pos, board.to_move, (delta_x, delta_y))
+        while tuple(pos) in board:
+            pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
             heuristic_0 += heuristic_1
             pos[0] += delta_x
             pos[1] += delta_y
+        pos[0] += delta_y
+        pos[1] = 1
 
     return heuristic_0
 
 
-def process_oblique(origin, h, v, board, pos, delta_x, delta_y):
+def process_oblique(origin, h, v, state, pos, delta_x, delta_y):
+    board = state.board.copy()
     heuristic_0 = 0
-    for i in range(h-1):
+    for i in range(h - 1):
+        while tuple(pos) in board:
+            pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
+            heuristic_0 += heuristic_1
+            pos[0] += delta_x
+            pos[1] += delta_y
         pos[0] += delta_y
         pos[1] = 1
-        while pos in board:
-            pos, heuristic_1 = k_in_row(board, pos, board.to_move, (delta_x, delta_y))
-            heuristic_0 += heuristic_1
-            pos[0] += delta_x
-            pos[1] += delta_y
 
     pos = [origin, 1]
-    for i in range(v-1):
-        pos[0] = h
-        pos[1] += delta_y
-        while pos in board:
-            pos, heuristic_1 = k_in_row(board, pos, board.to_move, (delta_x, delta_y))
+    for i in range(v - 1):
+        while tuple(pos) in board:
+            pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
             heuristic_0 += heuristic_1
             pos[0] += delta_x
             pos[1] += delta_y
+        pos[0] = h
+        pos[1] += delta_y
+
+    return heuristic_0
 
 
 def k_in_row(board, pos, player, (delta_x, delta_y)):
-    "Return true if there is a line through move on board for player."
     x, y = pos
     n = 0  # n is number of moves in row
     while board.get((x, y)) == player:
         n += 1
         x, y = x + delta_x, y + delta_y
-    return [x, y], row_value(n)
+
+    return [x, y], if_(player == 'X', row_value(n), -row_value(n))
 
 
 def row_value(row):
     if row == 4:
-        return 50
+        return 1000
     elif row == 3:
         return 10
     elif row == 2:
-        return 2
+        return 1
     else:
         return 0

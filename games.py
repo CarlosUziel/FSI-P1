@@ -115,7 +115,6 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
 
     action, state = argmax(lista,
                            lambda ((a, s)): min_value(s, -infinity, infinity, 0))
-
     return action
 
 
