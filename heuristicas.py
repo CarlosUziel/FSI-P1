@@ -9,42 +9,40 @@ def aleatoria(state):
 def main_heuristics(state, h=7, v=6):
     """
     Returns the sum of the following:
-        +50 -> For each 4 in a row
+        +1000 -> For each 4 or more in a row
         +10 -> For each 3 in a row
-        +2  -> For each 2 in a row
+        +1  -> For each 2 in a row
         +-0 -> No consecutive pieces
-        -2  -> For each 2 in a row (opponent)
+        -1  -> For each 2 in a row (opponent)
         -10 -> For each 3 in a row (opponent)
-        -50 -> For each 4 in a row (opponent)
+        -1000 -> For each 4 or more in a row (opponent)
     :param state:
     :return:
     """
     pos = [1, 1]
+    board = state.board.copy()
+    player = state.to_move
 
-    heuristic_0 = process_straight(h, v, state, pos, 0, 1) + \
-                  process_straight(v, h, state, pos, 1, 0) + \
-                  process_oblique(h, h, v, state, pos, -1, 1) + \
-                  process_oblique(1, h, v, state, pos, 1, 1)
+    heuristic_0 = process_straight(h, v, board, pos, player, 0, 1) + \
+                  process_straight(v, h, board, pos, player, 1, 0) + \
+                  process_oblique(h, h, v, board, pos, player, -1, 1) + \
+                  process_oblique(1, h, v, board, pos, player, 1, 1)
 
-    # if heuristic_0 > 500 or heuristic_0 < -500:
-    #    print '\n'
-    #    print heuristic_0
-    #    print '\n'
-    #    display(state, v, h)
+    if state.utility == 1 or state.utility == -1:
+        print '\n'
+        print heuristic_0
+        print '\n'
+        display(board, v, h)
     return heuristic_0
 
 
-def process_straight(s0, s1, state, pos, delta_x, delta_y):
-    board = state.board.copy()
+def process_straight(s0, s1, board, pos, player, delta_x, delta_y):
     heuristic_0 = 0
     for i in range(s0):
         while pos[delta_y] <= s1:
-            if tuple(pos) not in board:
-                pos[delta_y] += 1
-            pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
+            pos, heuristic_1 = subprocess_general(board, pos, player, delta_x, delta_y)
             heuristic_0 += heuristic_1
-            pos, heuristic_1 = k_in_row(board, pos, if_(state.to_move == 'X', 'O', 'X'), (delta_x, delta_y))
-            heuristic_0 += heuristic_1
+            pos[delta_y] += 1
 
         pos[delta_x] += 1
         pos[delta_y] = 1
@@ -52,31 +50,39 @@ def process_straight(s0, s1, state, pos, delta_x, delta_y):
     return heuristic_0
 
 
-def process_oblique(origin, h, v, state, pos, delta_x, delta_y):
-    board = state.board.copy()
+# TO-DO: Double counting
+def process_oblique(origin, h, v, board, pos, player, delta_x, delta_y):
     heuristic_0 = 0
-    for i in range(h - 1):
-        while tuple(pos) in board:
-            pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
-            heuristic_0 += heuristic_1
-            pos, heuristic_1 = k_in_row(board, pos, if_(state.to_move == 'X', 'O', 'X'), (delta_x, delta_y))
-            heuristic_0 += heuristic_1
-        pos[0] += delta_y
-        pos[1] = 1
+    oblique_mode = 0
+    for i in range(2):
+        for j in range(2, 2 + h):
+            while pos[delta_y] <= v:
+                pos, heuristic_1 = subprocess_general(board, pos, player, delta_x, delta_y)
+                heuristic_0 += heuristic_1
+                pos[delta_x - 1] += delta_x
+                pos[delta_y] += delta_y
 
-    pos = [origin, 1]
-    for i in range(v - 1):
-        while tuple(pos) in board:
-            pos, heuristic_1 = k_in_row(board, pos, state.to_move, (delta_x, delta_y))
-            heuristic_0 += heuristic_1
-            pos, heuristic_1 = k_in_row(board, pos, if_(state.to_move == 'X', 'O', 'X'), (delta_x, delta_y))
-            heuristic_0 += heuristic_1
-            pos[0] += delta_x
-            pos[1] += delta_y
-        pos[0] = h
-        pos[1] += delta_y
+            if oblique_mode:
+                pos[delta_x - 1] = origin
+                pos[delta_y] = j
+            else:
+                pos[delta_x - 1] = j
+                pos[delta_y] = 1
+
+        oblique_mode = not oblique_mode
 
     return heuristic_0
+
+
+def subprocess_general(board, pos, player, delta_x, delta_y):
+    heuristic_0 = 0
+    while tuple(pos) in board:
+        pos, heuristic_1 = k_in_row(board, pos, player, (delta_x, delta_y))
+        heuristic_0 += heuristic_1
+        pos, heuristic_1 = k_in_row(board, pos, if_(player == 'X', 'O', 'X'), (delta_x, delta_y))
+        heuristic_0 += heuristic_1
+
+    return pos, heuristic_0
 
 
 def k_in_row(board, pos, player, (delta_x, delta_y)):
@@ -86,7 +92,7 @@ def k_in_row(board, pos, player, (delta_x, delta_y)):
         n += 1
         x, y = x + delta_x, y + delta_y
 
-    return [x, y], if_(player == 'X', row_value(n), -row_value(n))
+    return [x, y], if_(player == 'X', +row_value(n), -row_value(n))
 
 
 def row_value(row):
@@ -100,8 +106,7 @@ def row_value(row):
         return 0
 
 
-def display(state, v, h):
-    board = state.board
+def display(board, v, h):
     for y in range(v, 0, -1):
         for x in range(1, h + 1):
             print board.get((x, y), '.'),
