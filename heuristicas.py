@@ -1,9 +1,10 @@
 from random import randint
 from games import *
-
+import pickle
 
 def aleatoria(state):
     return randint(-100, 100)
+
 
 def memoize(f):
     memo = {}
@@ -17,20 +18,30 @@ def memoize(f):
     return helper
 
 
+def save_obj(obj, fname):
+    with open('obj/'+ fname + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(fname):
+    with open('obj/' + fname + '.pkl', 'rb') as f:
+        return pickle.load(f)
+
+
+"""
+Returns the sum of the following:
+    +1000 -> For each 4 or more in a row
+    +10 -> For each 3 in a row
+    +1  -> For each 2 in a row
+    +-0 -> No consecutive pieces
+    -1  -> For each 2 in a row (opponent)
+    -10 -> For each 3 in a row (opponent)
+    -1000 -> For each 4 or more in a row (opponent)
+:param state:
+:return:
+"""
 @memoize
 def main_heuristics(state, h=7, v=6):
-    """
-    Returns the sum of the following:
-        +1000 -> For each 4 or more in a row
-        +10 -> For each 3 in a row
-        +1  -> For each 2 in a row
-        +-0 -> No consecutive pieces
-        -1  -> For each 2 in a row (opponent)
-        -10 -> For each 3 in a row (opponent)
-        -1000 -> For each 4 or more in a row (opponent)
-    :param state:
-    :return:
-    """
 
     pos = [1, 1]
     board = state.board.copy()
@@ -47,8 +58,6 @@ def main_heuristics(state, h=7, v=6):
     #    print '\n'
     #    display(board, v, h)
     return heuristic_0
-
-#main_heuristics = memoize(main_heuristics)
 
 
 def process_straight(s0, s1, board, pos, player, delta_x, delta_y):
