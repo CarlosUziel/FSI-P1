@@ -5,7 +5,19 @@ from games import *
 def aleatoria(state):
     return randint(-100, 100)
 
+def memoize(f):
+    memo = {}
 
+    def helper(x):
+        key = frozenset(x.board.items())
+        if key not in memo:
+            memo[key] = f(x)
+        return memo[key]
+
+    return helper
+
+
+@memoize
 def main_heuristics(state, h=7, v=6):
     """
     Returns the sum of the following:
@@ -19,6 +31,7 @@ def main_heuristics(state, h=7, v=6):
     :param state:
     :return:
     """
+
     pos = [1, 1]
     board = state.board.copy()
     player = state.to_move
@@ -28,12 +41,14 @@ def main_heuristics(state, h=7, v=6):
                   process_oblique(h, h, v, board, pos, player, -1, 1) + \
                   process_oblique(1, h, v, board, pos, player, 1, 1)
 
-    if state.utility == 1 or state.utility == -1:
-        print '\n'
-        print heuristic_0
-        print '\n'
-        display(board, v, h)
+    # if state.utility == 1 or state.utility == -1:
+    #   print '\n'
+    #    print heuristic_0
+    #    print '\n'
+    #    display(board, v, h)
     return heuristic_0
+
+#main_heuristics = memoize(main_heuristics)
 
 
 def process_straight(s0, s1, board, pos, player, delta_x, delta_y):
