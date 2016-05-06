@@ -84,8 +84,8 @@ def process_oblique(origin, h, v, board, pos, player, delta_x, delta_y):
                 pos[delta_y] = 1
 
         oblique_mode = not oblique_mode
-
-    return heuristic_0
+        
+    return if_(heuristic_0 >= 1500, heuristic_0-1000, heuristic_0)
 
 
 def subprocess_general(board, pos, player, delta_x, delta_y):
