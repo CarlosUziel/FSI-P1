@@ -18,16 +18,6 @@ def memoize(f):
     return helper
 
 
-def save_obj(obj, fname):
-    with open('obj/'+ fname + '.pkl', 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-
-
-def load_obj(fname):
-    with open('obj/' + fname + '.pkl', 'rb') as f:
-        return pickle.load(f)
-
-
 """
 Returns the sum of the following:
     +1000 -> For each 4 or more in a row
