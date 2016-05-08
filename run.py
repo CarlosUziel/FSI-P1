@@ -20,8 +20,7 @@ while True:
 
     if player == 'O':
         col_str = raw_input("Movimiento: ")
-        coor = int(str(col_str).strip())
-        x = coor
+        x = int(str(col_str).strip())
         y = -1
         legal_moves = game.legal_moves(state)
         for lm in legal_moves:

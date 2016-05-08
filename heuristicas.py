@@ -42,12 +42,7 @@ def main_heuristics(state, h=7, v=6):
                   process_oblique(h, h, v, board, pos, player, -1, 1) + \
                   process_oblique(1, h, v, board, pos, player, 1, 1)
 
-    # if state.utility == 1 or state.utility == -1:
-    #   print '\n'
-    #    print heuristic_0
-    #    print '\n'
-    #    display(board, v, h)
-    return heuristic_0
+    return heuristic_0/len(board)
 
 
 def process_straight(s0, s1, board, pos, player, delta_x, delta_y):
@@ -84,8 +79,12 @@ def process_oblique(origin, h, v, board, pos, player, delta_x, delta_y):
                 pos[delta_y] = 1
 
         oblique_mode = not oblique_mode
-        
-    return if_(heuristic_0 >= 1500, heuristic_0-1000, heuristic_0)
+
+    # Double counting temporary fix
+    heuristic_0 = if_(heuristic_0 >= 1500, heuristic_0-1000, heuristic_0)
+    heuristic_0 = if_(heuristic_0 <= -1500, heuristic_0+1000, heuristic_0)
+
+    return heuristic_0
 
 
 def subprocess_general(board, pos, player, delta_x, delta_y):
@@ -118,13 +117,3 @@ def row_value(row):
         return 1
     else:
         return 0
-
-
-def display(board, v, h):
-    for y in range(v, 0, -1):
-        for x in range(1, h + 1):
-            print board.get((x, y), '.'),
-        print
-    print "-------------------"
-    for n in range(1, h + 1):
-        print n,
